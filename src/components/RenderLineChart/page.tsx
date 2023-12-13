@@ -12,80 +12,51 @@ import {
 } from "recharts";
 
 
+const RenderLineChart = ({ selectedPrefectures }: { selectedPrefectures: string[] }) => {
 
 
-const data = [
-  {
-    name: "Page A",
-    uv: 4000,
-    pv: 2400,
-    amt: 2400,
+
+const [chartData, setChartData] = useState(generateData());
+const [populationData, setPopulationData] = useState([]);
+
+const formatYAxis = (value: number) => {
+  if (value >= 100000) {
+    return `${value / 100000}M`; // 1M以上の場合はMで省略
   }
+  return value;
+};
 
-];
-
-const RenderLineChart = () => {
-
-    const generateData = () => {
-        const startYear = 1960;
-        const endYear = 2050;
-        const interval = 5;
-    
-        const data = [];
-    
-        for (let year = startYear; year <= endYear; year += interval) {
-          data.push({
-            name: `${year}年`,
-/*             uv: // 何かしらの数値データをここに設定する,
-            pv: // 何かしらの数値データをここに設定する,
-            amt: // 何かしらの数値データをここに設定する, */
-          });
+useEffect(() => {
+  const fetchPopulationData = async () => {
+    try {
+      const populationData = await fetch(
+        "https://opendata.resas-portal.go.jp/api/v1/population/composition/perYear",
+        {
+          headers: {
+            "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY || "", // APIキーがundefinedの場合には空文字列をセット
+          },
         }
-    
-        return data;
-      };
-
-      const [chartData, setChartData] = useState(generateData());
-
-  useEffect(() => {
-    const fetchData = async () => {
-        try {
-            const apiData = await fetch('https://opendata.resas-portal.go.jp/api/v1/prefectures', {
-                headers: {
-                    'X-API-KEY': process.env.NEXT_PUBLIC_API_KEY || '', // APIキーがundefinedの場合には空文字列をセット
-                },
-            });
-
-    const data = await apiData.json();
-        console.log(data);
-        } catch (error) {
-            alert("error");
-        }
-    };
-        fetchData();
-    }, []);
+      );
 
 
-/*             // APIデータから必要な形式に変換してセット
-            const formattedData = data.result.map((prefecture) => ({
-                name: prefecture.prefName,
-                uv: // 何かしらの数値データをここに設定する,
-                pv: // 何かしらの数値データをここに設定する,
-                amt: // 何かしらの数値データをここに設定する,
-              }));
-      
-              setChartData(formattedData);
-            } catch (error) {
-              alert("error");
-            }
-          };
-
-          fetchData();
-        }, []); */
+      const data = await populationData.json();
+          /* console.log(data); */
+        setPopulationData(data.result);
+        const newData = data.result.data.map((item: { year: any; value: any; }) => ({
+          name: `${item.year}年`,
+          pv: item.value,
+        }));
+        setChartData(newData);
+    } catch (error) {
+          alert("error");
+    }
+  };
+  fetchPopulationData();
+}, [setPopulationData]);
 
   return (
     <>
-    <p>{data}</p>
+
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           width={500}
@@ -100,7 +71,7 @@ const RenderLineChart = () => {
         >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
-        <YAxis />
+        <YAxis type="number" domain={[0, 100000000]} tickFormatter={formatYAxis} />
         <Tooltip />
         <Legend />
         <Line

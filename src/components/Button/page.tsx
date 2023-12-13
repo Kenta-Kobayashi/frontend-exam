@@ -1,81 +1,87 @@
 "use client";
-import { useContext, useState } from "react"
+import { useContext, useEffect, useState } from "react";
 import { dataContext } from "../DataProvider/page";
 
+interface Prefecture {
+    prefCode: number;
+    prefName: string;
+    id: number;
+  }
 
-type Props = {
-    code: number;
-    label: string;
-    checked: boolean;
-    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  };
+const Button = () => {
+
+  const [kenData, setKenData] = useState<Prefecture[]>([]);
+  const data = useContext(dataContext);
+  const [checkboxState, setCheckboxState] = useState<{
+    [key:string] : Boolean;
+  }>([]);
 
 
-const Button = ({ code, label, checked, onChange }) => {
 
-    const data = useContext(dataContext)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const apiData = await fetch(
+          "https://opendata.resas-portal.go.jp/api/v1/prefectures",
+          {
+            headers: {
+              "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY || "", // APIキーがundefinedの場合には空文字列をセット
+            },
+          }
+        );
 
-    const [checkboxState, setCheckboxState] = useState<{
-        [key: string]: boolean;
-    }>({});
+        const data = await apiData.json();
+            /* console.log(data); */
+        setKenData(data.result);
+      } catch (error) {
+            alert("error");
+      }
+    };
+    fetchData();
+  }, []);
 
-    // チェックボックスがクリックされたときのイベントハンドラ
-    const handleCheckboxChange = (id: string) => {
-        // チェックボックスの状態を更新
-        setCheckboxState((prevState) => ({
-        ...prevState,
-        [id]: !prevState[id], // 現在の状態の反転
-        }));
 
-        // ログをdataに格納
-        const updatedData = { ...data, [id]: !checkboxState[id] };
+  // チェックボックスがクリックされたときのイベントハンドラ
+  const handleCheckboxChange = (label: string) => {
+    // チェックボックスの状態を更新
+    setCheckboxState((prevState) => {
+        const updatedState = { ...prevState, [label]: !prevState[label] }; // 最新の状態を使って更新
+            /* console.log(updatedState); */ // 更新された状態をログに出力
+        return updatedState; // 更新された状態を返す
+    });
 
+
+    // ログをdataに格納
+    const updatedData = { ...(data as object), [label]: !checkboxState[label] };
         console.log(updatedData);
 
-        // 選択された都道府県名を親コンポーネントに伝える
-        /* onCheckboxChange(id); */
+    const selectedPrefecture = kenData.find((prefecture) => prefecture.prefName === label);
+        if (selectedPrefecture) {
+            console.log(selectedPrefecture);
+        }
+  };
 
-    };
-
-return (
+  return (
     <>
-        <div>
-            {[
-            "あああ",
-            "千葉県",
-            "埼玉県",
-            "神奈川県",
-            "長野県",
-            "山梨県",
-            "茨木県",
-            "栃木県",
-            "群馬県",
-            "静岡県",
-            "大阪府",
-            "京都府",
-            "北海道",
-            "愛知県",
-            "兵庫県",
-            "鳥取県",
-            ].map((id) => (
-                    <div  key={`checkbox${id}`} >
-                        <input
-                        type="checkbox"
-                        value={code}
-                        name={label}
-                        id={label}
-                        checked={checked}
-                        onChange={(e) => onChange(e)}
-                        />
+      <div>
+        {kenData.map((prefecture) => (
+          <div key={`checkbox${prefecture.prefCode}`}>
+            <input
+              type="checkbox"
+              name={prefecture.prefName}
+              id={prefecture.id}
+              checked={checkboxState[prefecture.prefName] || false}
+              onChange={() => handleCheckboxChange(prefecture.prefName)}
+            />
 
-                        <label className="text" htmlFor={label}>
-                            {label}
-                        </label>
-                    </div>
-            ))}
-        </div>
+            <label className="text" htmlFor={prefecture.prefName}>
+                {prefecture.prefName}
+            </label>
+          </div>
+        ))}
+      </div>
     </>
-    );
+  );
 };
 
 export default Button;
