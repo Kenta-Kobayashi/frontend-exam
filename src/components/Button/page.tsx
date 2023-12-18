@@ -23,7 +23,7 @@ const [contextState, setContextState] = useContext(dataContext);
     const fetchData = async () => {
       try {
         const apiData = await fetch(
-          "https://opendata.resas-portal.go.jp/api/v1/prefectures?year=1",
+          "https://opendata.resas-portal.go.jp/api/v1/prefectures",
           {
             headers: {
               "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY || "", // APIキーがundefinedの場合には空文字列をセット
