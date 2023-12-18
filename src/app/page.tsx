@@ -12,27 +12,23 @@ import DataProvider from "@/components/DataProvider/page";
 
 export default function Home() {
 
-
-
-
-
     return (
 
         <DataProvider>
             <div className={styles.wrapper}>
                 <h1>都道府県</h1>
-                <section className={styles.contents_box}>
+                 <section className={styles.contents_box}>
                     <div className={styles.button_list}>
                         <Button />
                     </div>
                 </section>
 
-                <section className={styles.contents_box_chart}>
-                    <RenderLineChart />
+                 <section className={styles.contents_box_chart}>
+                    <RenderLineChart selectedPrefectures={[]} />
                 </section>
 
             </div>
-        </DataProvider>
+         </DataProvider>
     )
 
 };

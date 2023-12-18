@@ -16,14 +16,14 @@ const RenderLineChart = ({ selectedPrefectures }: { selectedPrefectures: string[
 
 
 
-const [chartData, setChartData] = useState(generateData());
+const [chartData, setChartData] = useState();
 const [populationData, setPopulationData] = useState([]);
 
 const formatYAxis = (value: number) => {
   if (value >= 100000) {
     return `${value / 100000}M`; // 1M以上の場合はMで省略
   }
-  return value;
+  return String(value);
 };
 
 useEffect(() => {

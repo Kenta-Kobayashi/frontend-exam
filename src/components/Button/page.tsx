@@ -2,7 +2,7 @@
 import { useContext, useEffect, useState } from "react";
 import { dataContext } from "../DataProvider/page";
 
-interface Prefecture {
+export interface Prefecture {
     prefCode: number;
     prefName: string;
     id: number;
@@ -13,16 +13,17 @@ const Button = () => {
   const [kenData, setKenData] = useState<Prefecture[]>([]);
   const data = useContext(dataContext);
   const [checkboxState, setCheckboxState] = useState<{
-    [key:string] : Boolean;
-  }>([]);
+    [key:string] : boolean;
+  }>({});
 
-
+const [contextState, setContextState] = useContext(dataContext);
 
   useEffect(() => {
+
     const fetchData = async () => {
       try {
         const apiData = await fetch(
-          "https://opendata.resas-portal.go.jp/api/v1/prefectures",
+          "https://opendata.resas-portal.go.jp/api/v1/prefectures?year=1",
           {
             headers: {
               "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY || "", // APIキーがundefinedの場合には空文字列をセット
@@ -42,23 +43,20 @@ const Button = () => {
 
 
   // チェックボックスがクリックされたときのイベントハンドラ
-  const handleCheckboxChange = (label: string) => {
+  const handleCheckboxChange = (labelName: string, labelCode:number) => {
     // チェックボックスの状態を更新
     setCheckboxState((prevState) => {
-        const updatedState = { ...prevState, [label]: !prevState[label] }; // 最新の状態を使って更新
+        const updatedState = { ...prevState, [labelName]: !prevState[labelName] }; // 最新の状態を使って更新
             /* console.log(updatedState); */ // 更新された状態をログに出力
         return updatedState; // 更新された状態を返す
     });
 
+    setContextState((prevState) => ({
 
-    // ログをdataに格納
-    const updatedData = { ...(data as object), [label]: !checkboxState[label] };
-        console.log(updatedData);
-
-    const selectedPrefecture = kenData.find((prefecture) => prefecture.prefName === label);
-        if (selectedPrefecture) {
-            console.log(selectedPrefecture);
-        }
+      ...prevState,
+      prefName: labelName,
+      prefCode: labelCode,
+    }));
   };
 
   return (
@@ -69,9 +67,11 @@ const Button = () => {
             <input
               type="checkbox"
               name={prefecture.prefName}
-              id={prefecture.id}
+              id={prefecture.prefName}
               checked={checkboxState[prefecture.prefName] || false}
-              onChange={() => handleCheckboxChange(prefecture.prefName)}
+              onChange={() =>
+                handleCheckboxChange(prefecture.prefName, prefecture.prefCode)
+              }
             />
 
             <label className="text" htmlFor={prefecture.prefName}>
