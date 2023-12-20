@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -17,18 +17,10 @@ const RenderLineChart = ({
 }: {
   selectedPrefectures: string[];
 }) => {
-
   const [populationData, setPopulationData] = useState([]);
 
   const [contextState, setContextState] = useContext(dataContext);
-   /*  console.log(contextState.prefCode); */
-
-  const formatYAxis = (value: number) => {
-    if (value >= 100000) {
-      return `${value / 100000}M`; // 1M以上の場合はMで省略
-    }
-    return String(value);
-  };
+  /*  console.log(contextState.prefCode); */
 
   useEffect(() => {
     const fetchPopulationData = async () => {
@@ -43,8 +35,8 @@ const RenderLineChart = ({
         );
 
         const data = await populationData.json();
-          setPopulationData(data.result.data[0].data);
-
+        setPopulationData(data.result.data[0].data);
+        console.log(valueName);
       } catch (error) {
         alert("error");
       }
@@ -52,7 +44,24 @@ const RenderLineChart = ({
     fetchPopulationData();
   }, [contextState]);
 
-  console.log(populationData);
+
+  // dataとprefNameをメモ化
+  const memoizedDataAndPrefName = useMemo(
+    () => ({
+      Data: populationData,
+      Name: contextState.prefName,
+    }),
+    [populationData, contextState.prefName]
+  );
+  console.log(memoizedDataAndPrefName);
+  console.log(populationData, "人口データ");
+
+/*   const data = [
+    {
+      year: {populationData},
+      name: ,
+    },
+  ]; */
 
   return (
     <>
@@ -70,16 +79,12 @@ const RenderLineChart = ({
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="year" />
-          <YAxis
-            type="number"
-            domain={[0, 100000000]}
-            tickFormatter={formatYAxis}
-          />
+          <YAxis />
           <Tooltip />
           <Legend />
           <Line
             type="monotone"
-            dataKey="pv"
+            dataKey="value"
             stroke="#8884d8"
             activeDot={{ r: 8 }}
           />

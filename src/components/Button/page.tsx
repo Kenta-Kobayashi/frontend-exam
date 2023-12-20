@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { dataContext } from "../DataProvider/page";
 
 export interface Prefecture {
@@ -41,7 +41,6 @@ const [contextState, setContextState] = useContext(dataContext);
     fetchData();
   }, []);
 
-
   // チェックボックスがクリックされたときのイベントハンドラ
   const handleCheckboxChange = (labelName: string, labelCode:number) => {
     // チェックボックスの状態を更新
@@ -51,6 +50,8 @@ const [contextState, setContextState] = useContext(dataContext);
         return updatedState; // 更新された状態を返す
     });
 
+
+
     setContextState((prevState) => ({
 
       ...prevState,
@@ -58,6 +59,8 @@ const [contextState, setContextState] = useContext(dataContext);
       prefCode: labelCode,
     }));
   };
+
+
 
   return (
     <>
